@@ -685,6 +685,9 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InputMediaPhoto, FSInputFile
 from aiogram.filters import Command
 from dotenv import load_dotenv
+from aiohttp import web
+
+PORT = int(os.getenv("PORT", 10000))
 
 # ============================
 # KONFIGURATSIYA
