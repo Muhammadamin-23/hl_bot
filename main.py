@@ -1079,11 +1079,11 @@ async def send_images_optimized(message: Message, lang: str):
 
                 if i == 0:  # Birinchi rasm uchun caption
                     caption_text = {
-                        "uz": f"🏨 HL 309 Hotel\n📍 Toshkent shahri, Yunusobod tumani\n📞 +998998897776\n📸 Jami: {total_images} ta rasm",
-                        "ru": f"🏨 HL 309 Hotel\n📍 г. Ташкент, Юнусабадский район\n📞 +998998897776\n📸 Всего: {total_images} изображений",
-                        "en": f"🏨 HL 309 Hotel\n📍 Tashkent city, Yunusabad district\n📞 +998998897776\n📸 Total: {total_images} images",
-                        "tr": f"🏨 HL 309 Hotel\n📍 Taşkent şehri, Yunusabad ilçesi\n📞 +998998897776\n📸 Toplam: {total_images} görsel",
-                        "ar": f"🏨 فندق HL 309\n📍 مدينة طشقند، حي يونوس آباد\n📞 +998998897776\n📸 المجموع: {total_images} صورة"
+                        "uz": f"🏨 HL 309 Hotel\n📍 Toshkent shahri, Rakatboshi ko'chasi 3A\n📞 +998998897776\n📸 Jami: {total_images} ta rasm",
+                        "ru": f"🏨 HL 309 Hotel\n📍 г. Ташкент, ул. Ракатбоши 3A\n📞 +998998897776\n📸 Всего: {total_images} изображений",
+                        "en": f"🏨 HL 309 Hotel\n📍 Tashkent city, Rakatboshi street 3A\n📞 +998998897776\n📸 Total: {total_images} images",
+                        "tr": f"🏨 HL 309 Hotel\n📍 Taşkent şehri, Rakatboshi cad. 3A\n📞 +998998897776\n📸 Toplam: {total_images} görsel",
+                        "ar": f"🏨 فندق HL 309\n📍 nمدينة طشقند، شارع راكاتبوشي\n📞 +998998897776\n📸 المجموع: {total_images} صورة"
                     }
                     caption = caption_text.get(lang, f"🏨 HL 309 Hotel\nTotal: {total_images} images")
                     media_group.append(InputMediaPhoto(media=photo, caption=caption))
