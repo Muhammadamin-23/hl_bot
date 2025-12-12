@@ -695,24 +695,13 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Bot tokenini environment dan olish
-BOT_TOKEN = os.environ.get('BOT_TOKEN')
-if not BOT_TOKEN:
+API_TOKEN = os.environ.get('API_TOKEN')
+if not API_TOKEN:
     logger.error("BOT_TOKEN environment variable topilmadi!")
     raise ValueError("BOT_TOKEN topilmadi")
 
-bot = telebot.TeleBot(BOT_TOKEN)
+bot = telebot.TeleBot(API_TOKEN)
 
-
-# Start komandasi
-@bot.message_handler(commands=['start'])
-def send_welcome(message):
-    bot.reply_to(message, "✅ Bot Renderda muvaffaqiyatli ishga tushdi!")
-
-
-# Echo handler
-@bot.message_handler(func=lambda message: True)
-def echo_all(message):
-    bot.reply_to(message, f"Sizning xabaringiz: {message.text}")
 
 
 # Webhook endpoint
