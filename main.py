@@ -695,7 +695,8 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Bot tokenini environment dan olish
-API_TOKEN = os.environ.get('API_TOKEN')
+load_dotenv()
+API_TOKEN = os.getenv('API_TOKEN')
 if not API_TOKEN:
     logger.error("BOT_TOKEN environment variable topilmadi!")
     raise ValueError("BOT_TOKEN topilmadi")
@@ -726,7 +727,7 @@ def home():
 def set_webhook():
     try:
         # Render external hostname
-        render_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+        render_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 
         if render_hostname:
             webhook_url = f"https://{render_hostname}/webhook"
