@@ -685,13 +685,16 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InputMediaPhoto, FSInputFile
 from aiogram.filters import Command
 from dotenv import load_dotenv
-from aiohttp import web
+import telebot
 
-PORT = int(os.getenv("PORT", 10000))
-async def health_check(request):
-    """Render uchun health check endpointi. Bu sayt ishlayotganini tekshirish uchun kerak."""
-    return web.Response(text="✅ HL 309 Hotel Bot is running!")
+PORT = int(os.environ.get('PORT', 5000))
+bot = telebot.TeleBot("BOT_TOKEN")
 
+# Webhook sozlash
+bot.set_webhook(url="https://your-domain.com/" + bot.token)
+
+# Yoki polling ishlatish
+bot.infinity_polling()
 
 # ============================
 # KONFIGURATSIYA
