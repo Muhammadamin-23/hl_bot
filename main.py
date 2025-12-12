@@ -1135,15 +1135,6 @@ async def send_images_optimized(message: Message, lang: str):
                 if album_num < num_albums - 1 and num_albums > 1:
                     await asyncio.sleep(0.1)  # Juda qisqa kutish
 
-        # 3. Muvaffaqiyat xabari
-        # success_text = {
-        #     "uz": f"✅ {total_images} ta rasm muvaffaqiyatli yuborildi!",
-        #     "ru": f"✅ {total_images} изображений успешно отправлены!",
-        #     "en": f"✅ {total_images} images sent successfully!",
-        #     "tr": f"✅ {total_images} görsel başarıyla gönderildi!",
-        #     "ar": f"✅ تم إرسال {total_images} صورة بنجاح!"
-        # }
-        # await message.answer(success_text.get(lang, f"✅ {total_images} images sent!"))
 
     except Exception as e:
         print(f"❌ Rasm yuborish xatosi: {e}")
