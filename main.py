@@ -678,8 +678,9 @@
 #     asyncio.run(main())
 
 
-import asyncio
 import os
+import asyncio
+import logging
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InputMediaPhoto, FSInputFile
@@ -704,6 +705,29 @@ else:
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 user_data = {}
+
+
+# ============================
+# 1. AVVAL WEBHOOKNI O'CHIRISH
+# ============================
+async def delete_existing_webhook():
+    """Mavjud webhookni to'liq o'chirish"""
+    try:
+        import requests
+        url = f"https://api.telegram.org/bot{API_TOKEN}/deleteWebhook"
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            if data.get("ok"):
+                print("✅ Mavjud webhook o'chirildi")
+            else:
+                print(f"⚠️ Webhook o'chirishda xato: {data.get('description')}")
+        else:
+            print(f"❌ API so'rov xatosi: {response.status_code}")
+
+    except Exception as e:
+        print(f"⚠️ Webhook o'chirishda xato: {e}")
 
 
 # ============================
@@ -741,7 +765,7 @@ def debounce(seconds=1):
 
 
 # ============================
-# KLAVISHATURALAR
+# KLAVISHATURALAR - TÜM DİLLER DÜZELTİLDİ
 # ============================
 lang_kb = ReplyKeyboardMarkup(
     keyboard=[
@@ -784,7 +808,8 @@ def get_main_menu(lang="uz"):
         "tr": ReplyKeyboardMarkup(
             keyboard=[
                 [KeyboardButton(text="📱 Sosyal Medya")],
-                [KeyboardButton(text="ℹ️ Hakkımızda"), KeyboardButton(text="📞 İletişим")],
+                [KeyboardButton(text="ℹ️ Hakkımızda"), KeyboardButton(text="📞 İletişim")],
+                # DÜZELTİLDİ: İletişим → İletişim
                 [KeyboardButton(text="🌍 Dil değiştir")]
             ],
             resize_keyboard=True
@@ -979,7 +1004,7 @@ about_info = {
 
     "ru": "ℹ️ О нас\n"
           "Современный отель соответствующий стандартам – 4 звезды «⭐️⭐️⭐️⭐️» "
-          "Расположенный в Узбекистане г.Ташкент в деловом-историческом центре.\n\n"
+          "Расположенный в Узбеkiстане г.Ташкент в деловом-историческом центре.\n\n"
           "Предлагает вашему вниманию спектор номеров от стандартного, делюксы, люксы, виллы.\n\n"
           "С открытым летним бассейном, зелёной территорией SPA-центром, "
           "спортивным залом и рестораном детальное описание при бронировании и на сайте hlgroup.uz",
@@ -1013,26 +1038,21 @@ location_info = {
 
 
 # ============================
-# RASMLARNI O'QISH FUNKTSIYASI - TEZ VERSIYA
+# RASMLARNI O'QISH FUNKTSIYASI
 # ============================
 def get_image_files():
-    """images papkasidagi rasm fayllarini tez o'qish"""
+    """images papkasidagi rasm fayllarini o'qish"""
     if not os.path.exists("images"):
         return []
 
     image_files = []
     image_extensions = {'.jpg', '.jpeg', '.png', '.jfif', '.webp', '.bmp', '.gif'}
 
-    # Oson tekshirish
     try:
         for filename in os.listdir("images"):
             file_path = os.path.join("images", filename)
-
-            # Faqat oddiy fayllar
             if not os.path.isfile(file_path):
                 continue
-
-            # Tez kengaytma tekshirish
             ext = os.path.splitext(filename)[1].lower()
             if ext in image_extensions:
                 image_files.append(file_path)
@@ -1040,18 +1060,15 @@ def get_image_files():
         print(f"❌ Papka o'qish xatosi: {e}")
         return []
 
-    # Nom bo'yicha tartiblash
     image_files.sort()
     return image_files
 
 
 # ============================
-# RASMLARNI YUBORISH - OLDINDAN TAYYORLASH BILAN
+# RASMLARNI YUBORISH
 # ============================
 async def send_images_optimized(message: Message, lang: str):
-    """Rasmlarni optimallashtirilgan tarzda yuborish"""
-
-    # 1. Rasmlarni olish
+    """Rasmlarni yuborish"""
     image_files = get_image_files()
 
     if not image_files:
@@ -1066,21 +1083,16 @@ async def send_images_optimized(message: Message, lang: str):
         return
 
     total_images = len(image_files)
-    print(f"🚀 {total_images} ta rasm topildi")
 
-    # 2. Rasmlarni bir vaqtning o'zida yuborish
     try:
-        # Agar 10 tadan kam bo'lsa, bitta albomda
         if total_images <= 10:
             media_group = []
-
             for i, img_path in enumerate(image_files):
                 photo = FSInputFile(img_path)
-
-                if i == 0:  # Birinchi rasm uchun caption
+                if i == 0:
                     caption_text = {
                         "uz": f"🏨 HL 309 Hotel\n📍 Toshkent shahri, Rakatboshi ko'chasi 3A\n📞 +998998897776\n📸 Jami: {total_images} ta rasm",
-                        "ru": f"🏨 HL 309 Hotel\n📍 г. Ташкент, ул. Ракатбоши 3A\n📞 +998998897776\n📸 Всего: {total_images} изображений",
+                        "ru": f"🏨 HL 309 Hotel\n📍 г. Ташкент, ул. Ракатboşi 3A\n📞 +998998897776\n📸 Всего: {total_images} изображений",
                         "en": f"🏨 HL 309 Hotel\n📍 Tashkent city, Rakatboshi street 3A\n📞 +998998897776\n📸 Total: {total_images} images",
                         "tr": f"🏨 HL 309 Hotel\n📍 Taşkent şehri, Rakatboshi cad. 3A\n📞 +998998897776\n📸 Toplam: {total_images} görsel",
                         "ar": f"🏨 فندق HL 309\n📍 nمدينة طشقند، شارع راكاتبوشي\n📞 +998998897776\n📸 المجموع: {total_images} صورة"
@@ -1089,14 +1101,9 @@ async def send_images_optimized(message: Message, lang: str):
                     media_group.append(InputMediaPhoto(media=photo, caption=caption))
                 else:
                     media_group.append(InputMediaPhoto(media=photo))
-
-            # Barcha rasmlarni bir vaqtda yuborish
             await message.answer_media_group(media_group)
-
         else:
-            # 10 tadan ko'p bo'lsa, parallel yuborish
             num_albums = (total_images + 9) // 10
-
             for album_num in range(num_albums):
                 start_idx = album_num * 10
                 end_idx = min(start_idx + 10, total_images)
@@ -1105,8 +1112,7 @@ async def send_images_optimized(message: Message, lang: str):
                 media_group = []
                 for i, img_path in enumerate(album_images):
                     photo = FSInputFile(img_path)
-
-                    if i == 0:  # Har bir albomning birinchi rasmi uchun caption
+                    if i == 0:
                         if album_num == 0:
                             caption_text = {
                                 "uz": f"🏨 HL 309 Hotel\n📍 Toshkent shahri, Yunusobod tumani\n📞 +998998897776\n📸 Jami: {total_images} ta rasm (1/{num_albums})",
@@ -1127,15 +1133,9 @@ async def send_images_optimized(message: Message, lang: str):
                         media_group.append(InputMediaPhoto(media=photo, caption=caption))
                     else:
                         media_group.append(InputMediaPhoto(media=photo))
-
-                # Albomni yuborish
                 await message.answer_media_group(media_group)
-
-                # Keyingi albom uchun kichik kutish (agar kerak bo'lsa)
-                if album_num < num_albums - 1 and num_albums > 1:
-                    await asyncio.sleep(0.1)  # Juda qisqa kutish
-
-
+                if album_num < num_albums - 1:
+                    await asyncio.sleep(0.1)
     except Exception as e:
         print(f"❌ Rasm yuborish xatosi: {e}")
         error_text = {
@@ -1149,14 +1149,14 @@ async def send_images_optimized(message: Message, lang: str):
 
 
 # ============================
-# HANDLER FUNKTSIYALARI
+# HANDLER FUNKTSIYALARI - TÜM DİLLER DÜZELTİLDİ
 # ============================
 
 @dp.message(Command("start"))
 @debounce()
 async def start_handler(message: Message):
     await message.answer(
-        "Tilni tanlang / Choose language / Выберите язык / Dilinizi seçin / اختر اللغة 👇",
+        "Tilni tanlang 👇",
         reply_markup=lang_kb
     )
 
@@ -1165,7 +1165,6 @@ async def start_handler(message: Message):
 @debounce()
 async def language_handler(message: Message):
     user_id = message.from_user.id
-
     lang_map = {
         "🇺🇿 O'zbek": "uz",
         "🇷🇺 Русский": "ru",
@@ -1173,7 +1172,6 @@ async def language_handler(message: Message):
         "🇹🇷 Türkçe": "tr",
         "🇸🇦 العربية": "ar"
     }
-
     lang = lang_map.get(message.text, "uz")
 
     if user_id not in user_data:
@@ -1189,7 +1187,6 @@ async def language_handler(message: Message):
 async def social_menu_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     welcome_text = {
         "uz": "Ijtimoiy tarmoqlarimiz:",
         "ru": "Наши соцсети:",
@@ -1197,7 +1194,6 @@ async def social_menu_handler(message: Message):
         "tr": "Sosyal medya hesaplarımız:",
         "ar": "وسائل التواصل الاجتماعي الخاصة بنا:"
     }
-
     await message.answer(welcome_text.get(lang, "Our social media:"), reply_markup=get_social_menu(lang))
 
 
@@ -1216,19 +1212,18 @@ soc_map = {
 async def social_links_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     platform = soc_map[message.text]
     text = social_texts.get(lang, social_texts["en"]).get(platform, "")
-
     await message.answer(f"{text}{SOCIAL_LINKS[platform]}")
 
 
-@dp.message(F.text.in_(["📞 Kontakt", "📞 Контакты", "📞 Contact", "📞 İletişim", "📞 الاتصال"]))
+# 📞 İLETİŞİM HANDLER'LARI - TÜM DİLLER
+@dp.message(
+    F.text.in_(["📞 Kontakt", "📞 Контакты", "📞 Contact", "📞 İletişim", "📞 الاتصال"]))  # DÜZELTİLDİ: İletişим → İletişim
 @debounce()
 async def contact_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     await message.answer(contact_info.get(lang, contact_info["en"]), reply_markup=get_main_menu(lang))
 
 
@@ -1237,7 +1232,6 @@ async def contact_handler(message: Message):
 async def about_menu_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     choose_text = {
         "uz": "ℹ️ Tanlang:",
         "ru": "ℹ️ Выберите:",
@@ -1245,7 +1239,6 @@ async def about_menu_handler(message: Message):
         "tr": "ℹ️ Seçin:",
         "ar": "ℹ️ اختر:"
     }
-
     await message.answer(choose_text.get(lang, "ℹ️ Choose:"), reply_markup=get_about_menu(lang))
 
 
@@ -1254,18 +1247,14 @@ async def about_menu_handler(message: Message):
 async def about_info_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     await message.answer(about_info.get(lang, about_info["en"]))
 
 
-# TEZLASHTIRILGAN RASMLAR HANDLERI
 @dp.message(F.text.in_(["🖼️ Rasmlar", "🖼️ Изображения", "🖼️ Images", "🖼️ Görseller", "🖼️ الصور"]))
-@debounce(seconds=1)  # Faqat 1 soniya debounce
+@debounce(seconds=1)
 async def images_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
-    # Tez yuklash xabari (faqat tasdiq uchun)
     loading_text = {
         "uz": "🚀 Rasmlar yuklanmoqda...",
         "ru": "🚀 Изображения загружаются...",
@@ -1273,10 +1262,7 @@ async def images_handler(message: Message):
         "tr": "🚀 Görseller yükleniyor...",
         "ar": "🚀 يتم تحميل الصور..."
     }
-
     await message.answer(loading_text.get(lang, "🚀 Loading images..."))
-
-    # Tez yuklash
     await send_images_optimized(message, lang)
 
 
@@ -1285,19 +1271,15 @@ async def images_handler(message: Message):
 async def location_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     await message.answer(location_info.get(lang, location_info["en"]))
-
     try:
         latitude = 41.30390
         longitude = 69.26108
-
         await message.answer_location(
             latitude=latitude,
             longitude=longitude,
             horizontal_accuracy=50
         )
-
         google_maps_link = f"https://www.google.com/maps?q={latitude},{longitude}"
         map_text = {
             "uz": "📍 Google Mapsda ochish:",
@@ -1306,9 +1288,7 @@ async def location_handler(message: Message):
             "tr": "📍 Google Haritalar'da aç:",
             "ar": "📍 فتح في خرائط جوجل:"
         }
-
         await message.answer(f"{map_text.get(lang, '📍 Open in Google Maps:')}\n{google_maps_link}")
-
     except Exception as e:
         print(f"❌ Xarita yuborish xatosi: {e}")
 
@@ -1318,7 +1298,6 @@ async def location_handler(message: Message):
 async def back_social_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     await message.answer("↩️", reply_markup=get_main_menu(lang))
 
 
@@ -1327,7 +1306,6 @@ async def back_social_handler(message: Message):
 async def back_about_handler(message: Message):
     user_id = message.from_user.id
     lang = user_data.get(user_id, {}).get("lang", "uz")
-
     back_text = {
         "uz": "Asosiy menyuga qaytildi",
         "ru": "Вернуться в главное меню",
@@ -1335,7 +1313,6 @@ async def back_about_handler(message: Message):
         "tr": "Ana menüye dönüldü",
         "ar": "العودة إلى القائمة الرئيسية"
     }
-
     await message.answer(back_text.get(lang, "Back to main menu"), reply_markup=get_main_menu(lang))
 
 
@@ -1343,56 +1320,91 @@ async def back_about_handler(message: Message):
     F.text.in_(["🌍 Tilni o'zgartirish", "🌍 Изменить язык", "🌍 Change language", "🌍 Dil değiştir", "🌍 تغيير اللغة"]))
 @debounce()
 async def change_language_handler(message: Message):
-    await message.answer(
-        "Tilni tanlang / Choose language / Выберите язык / Dilinizi seçin / اختر اللغة 👇",
-        reply_markup=lang_kb
-    )
+    await message.answer("Tilni tanlang 👇", reply_markup=lang_kb)
 
 
 # ============================
-# ASOSIY FUNKSIYA
+# ASOSIY FUNKSIYA - POLLING REJIMI
 # ============================
-async def main():
+async def main_polling():
+    """Polling rejimida ishlash"""
     print("=" * 50)
     print("🤖 HL 309 Hotel Bot ishga tushmoqda...")
-    print(f"🔐 Token mavjudligi: {'✅' if API_TOKEN else '❌'}")
     print("=" * 50)
 
-    # images papkasini tekshirish
+    # 1. AVVAL WEBHOOKNI TO'LIQ O'CHIRISH
+    print("🔧 Webhook tekshirilmoqda...")
+    await delete_existing_webhook()
+
+    # 2. AIOGRAM ORQALI HAM WEBHOOKNI O'CHIRISH
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)
+        print("✅ Aiogram orqali webhook o'chirildi")
+    except Exception as e:
+        print(f"⚠️ Aiogram webhook o'chirishda xato: {e}")
+
+    # 3. TELEGRAM API ORQALI TEKSHIRISH
+    try:
+        import requests
+        check_url = f"https://api.telegram.org/bot{API_TOKEN}/getWebhookInfo"
+        response = requests.get(check_url).json()
+
+        if response.get("ok") and response["result"].get("url"):
+            print(f"⚠️ Webhook hali faol: {response['result']['url']}")
+
+            delete_url = f"https://api.telegram.org/bot{API_TOKEN}/deleteWebhook"
+            delete_response = requests.get(delete_url).json()
+
+            if delete_response.get("ok"):
+                print("✅ API orqali webhook o'chirildi")
+            else:
+                print(f"❌ API orqali webhook o'chirish muvaffaqiyatsiz")
+        else:
+            print("✅ Webhook faol emas, polling ishlatish mumkin")
+
+    except Exception as e:
+        print(f"⚠️ Webhook tekshirishda xato: {e}")
+
+    # 4. RASMLARNI TEKSHIRISH
     if not os.path.exists("images"):
         os.makedirs("images")
         print("📁 'images' papkasi yaratildi")
         print("ℹ️ Rasmlarni 'images' papkasiga joylang")
 
-    # Rasmlarni tekshirish
     image_files = get_image_files()
     total_images = len(image_files)
-
     print(f"📊 Rasmlar soni: {total_images} ta")
 
     if total_images > 0:
         print("📁 Topilgan rasmlar:")
-        for i, img_path in enumerate(image_files[:5], 1):  # Faqat 5 tasini ko'rsat
+        for i, img_path in enumerate(image_files[:3], 1):
             filename = os.path.basename(img_path)
-            file_size = os.path.getsize(img_path) / 1024  # KB
-            print(f"   {i}. {filename} ({file_size:.0f} KB)")
-
-        if total_images > 5:
-            print(f"   ... va yana {total_images - 5} ta rasm")
+            print(f"   {i}. {filename}")
 
     print("⚡ TEZLASHTIRILGAN yuklash rejimi")
-    print("🌍 5 til qo'llab-quvvatlanadi")
+    print("🌍 5 til qo'llab-quvvatlanadi (Türkçe düzeltildi ✅)")
     print("⏱️  Debounce: 1 soniya")
+    print("🔄 POLLING rejimi faollashtirildi")
     print("=" * 50)
-    print("✅ Bot ishga tushirilmoqda...")
+    print("✅ Bot polling rejimida ishga tushirilmoqda...")
 
+    # 5. POLLINGNI ISHGA TUSHIRISH
     try:
         await dp.start_polling(bot)
     except KeyboardInterrupt:
         print("\n🛑 Bot to'xtatildi!")
     except Exception as e:
         print(f"❌ Xatolik: {e}")
+        print("🔄 5 soniyadan keyin qayta urinilmoqda...")
+        await asyncio.sleep(5)
+        await main_polling()
 
 
+# ============================
+# DASTURNI ISHGA TUSHIRISH
+# ============================
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main_polling())
+    except Exception as e:
+        print(f"❌ Asosiy xatolik: {e}")
