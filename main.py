@@ -691,7 +691,7 @@ PORT = int(os.environ.get('PORT', 5000))
 bot = telebot.TeleBot("BOT_TOKEN")
 
 # Webhook sozlash
-bot.set_webhook(url="https://your-domain.com/" + bot.token)
+bot.set_webhook(url="https://api.telegram.org/bot<BOT_TOKEN>/getWebhookInfo" + bot.token)
 
 # Yoki polling ishlatish
 bot.infinity_polling()
