@@ -685,6 +685,81 @@ from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InputMediaPhoto, FSInputFile
 from aiogram.filters import Command
 from dotenv import load_dotenv
+import telebot
+from flask import Flask, request
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+
+# Bot tokenini environment dan olish
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+if not BOT_TOKEN:
+    logger.error("BOT_TOKEN environment variable topilmadi!")
+    raise ValueError("BOT_TOKEN topilmadi")
+
+bot = telebot.TeleBot(BOT_TOKEN)
+
+
+# Start komandasi
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "✅ Bot Renderda muvaffaqiyatli ishga tushdi!")
+
+
+# Echo handler
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
+    bot.reply_to(message, f"Sizning xabaringiz: {message.text}")
+
+
+# Webhook endpoint
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        logger.info("Webhook orqali yangi xabar qabul qilindi")
+        return 'OK', 200
+    return 'Forbidden', 403
+
+
+# Health check
+@app.route('/')
+def home():
+    return '🚀 Telegram Bot ishlayapti!'
+
+
+# Webhook sozlash funksiyasi
+def set_webhook():
+    try:
+        # Render external hostname
+        render_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+        if render_hostname:
+            webhook_url = f"https://{render_hostname}/webhook"
+            bot.remove_webhook()
+            bot.set_webhook(url=webhook_url)
+            logger.info(f"Webhook muvaffaqiyatli sozlandi: {webhook_url}")
+        else:
+            logger.warning("RENDER_EXTERNAL_HOSTNAME topilmadi, webhook sozlanmadi")
+    except Exception as e:
+        logger.error(f"Webhook sozlashda xato: {e}")
+
+
+if __name__ == '__main__':
+    # Server ishga tushganda webhook sozlash
+    set_webhook()
+
+    # Render PORT ni ishlatish
+    port = int(os.environ.get("PORT", 10000))
+    logger.info(f"Server {port} portda ishga tushmoqda...")
+
+    # Serverni ishga tushirish
+    app.run(host='0.0.0.0', port=port)
 
 # ============================
 # KONFIGURATSIYA
